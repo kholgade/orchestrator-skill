@@ -1,7 +1,7 @@
 ---
 name: sf-orchestrator
 description: Deliver an approved plan with multiple coding agents — parallel tasks in isolated git worktrees, supervisor-run evidence, independent review, bounded rework, milestone gates, periodic user updates (default 5 min), resumable runs with a full audit journal. Invokes sf-agent-setup, sf-spec-builder, sf-plan-builder first when their outputs are missing. Run to build/implement/deliver a project with agents, or to resume, assess, reset, inspect, replay, export, unblock or stop a delivery.
-version: 0.0.7
+version: 0.0.8
 ---
 
 # sf-orchestrator
@@ -87,3 +87,10 @@ Record every non-trivial operator decision: `note --kind decision --msg "…" [-
 - Exit 4 from `run` → Step 1. Exit 4 from a gated command → confirmation missing.
 - Supervisor will not stop → pid in `.sf/runtime/supervisor.lock`; kill; `assess`; resume or reset.
 - Invalid review results → reviewer logs under `.sf/runtime/runs/<task>/…`; fix reviewer profile via `sf-agent-setup`.
+
+## Examples
+- User: "build a REST API for a todo list in Go" → `check --json`; spec missing → ask `next.ask.question`, wait for answer, `consent --step spec --decision allow --confirmed-by user --quote "<words>"`, run sf-spec-builder; plan missing → same with `plan`; then `assess`, confirm run parameters, `run --detach`, loop `wait`.
+- User: "what happened to my last run?" → `assess --json`; summarize class, per-task facts, orphans, drift, options in ≤8 lines; do not start anything.
+- User: "resume" → `assess`; show it; ask resume vs reset; `resume --assessment <id> --decision resume --confirmed-by user --quote "<words>"`; `run --detach`.
+- User: "T-004 is blocked, try another agent" → `explain T-004`; `unblock T-004 --implementer <other-id> --extra-rounds 1 --note "<why>"`; `note --kind decision --msg "…"`.
+- User: "export the audit trail" → `export --out <dir>`; report manifest, chain status, replay-matches-state.

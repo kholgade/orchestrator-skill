@@ -22,7 +22,7 @@ function sandbox({ commands = [], dirs = [] } = {}) {
   };
   return { base, ws, home, run };
 }
-const SKILLS = ['sf-agent-setup', 'sf-spec-builder', 'sf-plan-builder', 'sf-orchestrator'];
+const SKILLS = ['sf-agent-setup', 'sf-spec-builder', 'sf-plan-builder', 'sf-orchestrator', 'sf-apply-ste'];
 
 test('multiple agents detected, non-interactive → options as JSON and exit 4, nothing written', () => {
   const s = sandbox({ commands: ['claude', 'codex'], dirs: ['.copilot'] });
@@ -37,7 +37,7 @@ test('multiple agents detected, non-interactive → options as JSON and exit 4, 
   assert.equal(fs.existsSync(path.join(s.ws, '.claude')), false);
 });
 
-test('--agent claude installs all four self-contained skills into <workspace>/.claude/skills', () => {
+test('--agent claude installs all five self-contained skills into <workspace>/.claude/skills', () => {
   const s = sandbox({ commands: ['claude', 'codex'] });
   assert.equal(s.run(['--agent', 'claude']).code, 4, 'needs --yes when not interactive');
   const r = s.run(['--agent', 'claude', '--yes']);

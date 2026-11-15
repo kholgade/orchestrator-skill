@@ -57,8 +57,19 @@ test('docs have a working light/dark/auto theme switch', () => {
   for (const m of ['auto', 'light', 'dark']) assert.ok(h.includes(m));
 });
 
+test('every skill is exemplified: README, its SKILL.md and the HTML; README badge matches the version', () => {
+  const readme = fs.readFileSync(path.join(REPO, 'README.md'), 'utf8');
+  for (const skill of ['sf-agent-setup', 'sf-spec-builder', 'sf-plan-builder', 'sf-orchestrator', 'sf-apply-ste']) {
+    assert.match(readme, new RegExp(`/${skill} \\S`), `README has no /${skill} example`);
+    assert.match(fs.readFileSync(path.join(REPO, skill, 'SKILL.md'), 'utf8'), /\n## Examples\n/, `${skill}/SKILL.md has no Examples section`);
+    assert.ok(html().includes(`data-skill="${skill}"`), `${skill} missing from the HTML examples`);
+  }
+  assert.ok(readme.includes(`badge/version-${SF_VERSION}-blue`), 'README version badge is stale');
+  assert.match(readme, /img\.shields\.io\/badge\/node-/);
+});
+
 test('repository root is tidy', () => {
-  const allowed = new Set(['.git', '.gitignore', 'README.md', 'package.json', 'docs', 'scripts', 'sf-agent-setup', 'sf-orchestrator', 'sf-plan-builder', 'sf-shared', 'sf-spec-builder', 'tests']);
+  const allowed = new Set(['.git', '.gitignore', 'README.md', 'package.json', 'docs', 'scripts', 'sf-agent-setup', 'sf-apply-ste', 'sf-orchestrator', 'sf-plan-builder', 'sf-shared', 'sf-spec-builder', 'tests']);
   const extra = fs.readdirSync(REPO).filter((n) => !allowed.has(n) && n !== '.DS_Store');
   assert.deepEqual(extra, []);
 });

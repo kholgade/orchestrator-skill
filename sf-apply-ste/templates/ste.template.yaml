@@ -1,0 +1,11 @@
+# .sf/ste.yaml — settings for sf-apply-ste (Simplified Technical English style checks).
+sf: ste/1
+paths:                       # files or folders to check when no path is given
+  - .sf/spec.md
+  # - docs/design
+ignore: []                   # glob patterns, relative to the project root
+max_words_descriptive: 25    # STE: 25 words in descriptive text
+max_words_procedural: 20     # STE: 20 words in procedures (numbered steps)
+max_sentences_paragraph: 6
+technical_terms: []          # project names that are allowed, for example: [worktree, supervisor]
+dictionary: ""               # optional path to an approved-word list (one word per line) from the official ASD-STE100 download

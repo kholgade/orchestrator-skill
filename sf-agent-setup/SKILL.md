@@ -1,7 +1,7 @@
 ---
 name: sf-agent-setup
 description: Build and verify .sf/factory.yaml (agent CLIs, role map, limits, git/approval/notification policy). Run when .sf/factory.yaml is missing, invalid, has unverified agents, or the user changes agents, roles, models, parallelism, git policy, approvals or notifications. Other sf-* skills call this first.
-version: 0.0.7
+version: 0.0.8
 ---
 
 # sf-agent-setup
@@ -43,3 +43,8 @@ CLI: `node <skill-dir>/scripts/setup.mjs <cmd>` (cwd = project root; Node ≥ 20
 
 ## Files
 `references/agent-profiles.md` (profile fields, placeholders, delivery modes, CLI hints) · `templates/factory.template.yaml`.
+
+## Examples
+- User: "use Claude to implement, Codex to review, notify me on Telegram" → `probe claude`, `probe codex`; read help; ask consent for any edit-permission flag; ask for `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` to be exported (never the values); write factory.yaml with `roles.implementers: [claude]`, `roles.reviewers: [codex]`, webhook preset `telegram`; `validate`; `doctor --all`.
+- User: "add OpenCode as another reviewer" → `probe opencode`; add agent; append id to `roles.reviewers`; `validate`; `doctor --agent opencode`.
+- User: "do my agents still work?" → `doctor --all`; report per-agent result and log paths for failures.

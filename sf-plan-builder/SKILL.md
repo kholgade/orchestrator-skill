@@ -1,7 +1,7 @@
 ---
 name: sf-plan-builder
 description: Produce an approved execution plan (.sf/plan.yaml) from an approved spec — milestones, task DAG, non-overlapping write scopes, verify commands, requirement traceability — by analysis with user review, or delegation to the configured planner agent. Run when no approved plan exists, after a spec change, or when work must be restructured or amended. Required by sf-orchestrator.
-version: 0.0.7
+version: 0.0.8
 ---
 
 # sf-plan-builder
@@ -51,3 +51,8 @@ Edit plan (add; never delete non-INTEGRATED tasks) → `lint` → user approval 
 - Every must/should requirement covered by ≥1 task.
 - No placeholders (`REPLACE_…`, TODO) in the plan.
 - Do not implement.
+
+## Examples
+- User: "plan the approved spec" → `status`; inspect repo for real test/build commands; `scaffold`; split into tasks, set disjoint `write_scopes`, add `verify`; `lint`; show `order`, `coverage`, `graph`; ask for approval; `approve --confirmed-by user --quote "<words>"`.
+- User: "two milestones, API first then UI; max 3 parallel" → M1 (API tasks), M2 (UI tasks) with `depends_on: [M1]`; keep UI write scopes disjoint from API's; tell the user the parallelism cap is `execution.max_parallel_tasks` in factory.yaml (sf-agent-setup) and propose changing it.
+- User: "add a migration task to milestone 1" → add task with its own scope and verify; make dependants `depends_on` it; `lint`; approval; `approve`; then `sf.mjs stop`/`assess` per the amend procedure.

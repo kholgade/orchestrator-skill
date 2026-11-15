@@ -1,6 +1,6 @@
 {
   "name": "skills-for-factory",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "private": true,
   "description": "sf-* skills: agent setup, spec builder, plan builder and orchestrator for multi-agent software delivery.",
   "type": "module",

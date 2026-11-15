@@ -49,7 +49,7 @@ function preflight() {
     { x: 600, name: 'plan approved?', ask: ['ASK USER', 'May I draft the plan?'], skill: ['sf-plan-builder', 'scaffold | delegate · lint', 'coverage · graph · approve'], done: 'user approves → ledger', step: 'plan' },
   ];
   let b = '';
-  b += node({ x: 20, y: 40, w: 130, h: 56, kind: 'script', lines: ['sf.mjs check', 'readiness steps'] });
+  b += node({ x: 20, y: 40, w: 130, h: 56, kind: 'script', lines: ['readiness check', 'agents · spec · plan'] });
   let prev = [150, 68];
   cols.forEach((c) => {
     b += node({ x: c.x, y: 40, w: 160, h: 56, kind: 'decision', dashed: true, lines: [c.name] });
@@ -81,7 +81,7 @@ function classes() {
     ['clean_stop · unsafe  /  crashed', 'user', 'dead pid · orphans · drift', ['show the user the assessment → ASK: resume · reset-task · reset-run', 'resume --assessment <id> --decision … (confirmed) → run --detach']],
     ['inconsistent', 'bad', 'log chain broken · git ≠ state', ['never auto-resume → reset-task · reset-run · manual repair']],
   ];
-  let b = node({ x: 20, y: 156, w: 130, h: 70, kind: 'script', lines: ['sf.mjs assess', 'read-only', 'assessment_id'] });
+  let b = node({ x: 20, y: 156, w: 130, h: 70, kind: 'script', lines: ['assess', 'read-only', 'assessment_id'] });
   rows.forEach((r, i) => {
     const y = 14 + i * 62;
     b += edge([[150, 191], [196, y + 25]]);
@@ -352,14 +352,15 @@ function overview() {
   });
   b += `<path d="M815 90 V126 H125" class="ed a dash" fill="none"/>`;
   [125, 355, 585].forEach((x) => { b += edge([[x, 126], [x, 92]], { kind: 'a', dashed: true }); });
-  b += tx(470, 120, 'invokes whatever is missing — after asking the user', 'el a');
+  b += tx(470, 144, 'invokes whatever is missing — after asking the user', 'el a');
   b += node({ x: 20, y: 160, w: 920, h: 44, kind: 'git', lines: ['sf-shared/lib — YAML parser · schemas · runner · git · state · journal · notify · confirm (vendored into every skill: each is self-contained)'] });
   const roles = [
     ['orchestrator', 'any agent session'], ['spec author', 'agent id | session'], ['planner', 'agent id | session'], ['implementers', 'parallel, one worktree each'], ['reviewers', 'independent of implementer'],
   ];
   roles.forEach((r, i) => { b += node({ x: 20 + i * 186, y: 232, w: 176, h: 46, kind: 'agent', lines: [r[0], r[1]] }); });
   b += tx(480, 304, 'Roles are data in .sf/factory.yaml — any mix of Claude, Codex, Copilot, Cursor, Gemini, OpenCode, Kiro, Cline, Windsurf, Pi, …', 'ns');
-  return svg(960, 320, b, { label: 'The four skills, shared library and agent roles' });
+  b += node({ x: 20, y: 328, w: 920, h: 50, kind: 'agent', dashed: true, lines: ['sf-apply-ste (optional)', 'checks and rewrites specs and design documents in Simplified Technical English · protects requirement IDs and approved specs'] });
+  return svg(960, 396, b, { label: 'The skills, shared library and agent roles' });
 }
 
 // ------------------------------------------------------------------ page
@@ -384,6 +385,38 @@ const COMMANDS = [
   ['report', 'LLM', 'delivery evidence report'],
   ['stop', 'LLM/user', 'graceful stop, state kept'],
 ];
+
+const EXAMPLES = [
+  { skill: 'sf-agent-setup', does: 'Probes each agent CLI, asks before any auto-approve flag, validates .sf/factory.yaml, runs a real test prompt on every agent.', gives: 'a verified agent / role map',
+    prompts: ['Claude implements, Codex reviews, Pi is a second implementer. Update me on Telegram every 5 minutes.', 'add OpenCode as another reviewer', 'check that all my agents still respond'] },
+  { skill: 'sf-spec-builder', does: 'Interviews you, or reads a document / answers file; unknowns become open questions, not guesses; lints; asks for your approval.', gives: '.sf/spec.md — numbered requirements with measurable criteria',
+    prompts: ['I need a CLI that converts CSV to JSON and handles files larger than memory', 'build the spec from docs/PRD.md', 'add a requirement: the API must rate-limit to 100 requests per minute'] },
+  { skill: 'sf-plan-builder', does: 'Slices the approved spec into milestones and tasks with disjoint write scopes and real verify commands; shows layers and coverage; asks for approval.', gives: '.sf/plan.yaml — every requirement traced to a task',
+    prompts: ['plan the approved spec', 'two milestones: API first, UI second; at most 3 tasks in parallel', 'add a database-migration task to milestone 1'] },
+  { skill: 'sf-apply-ste', does: 'Checks and rewrites specs and design documents in Simplified Technical English. A script fixes the mechanical problems; the agent rewrites the rest; a seal step protects requirement IDs and puts an approved spec back to draft.', gives: 'clearer documents, a ledger record, and a list of plan criteria to update',
+    prompts: ['make the spec clearer, use simplified technical English', 'apply STE to docs/design', 'check my spec against the STE word list I downloaded'] },
+  { skill: 'sf-orchestrator', does: 'Checks readiness, asks before building anything missing, then runs agents in parallel worktrees, verifies, reviews, merges and keeps you updated.', gives: 'merged, verified, independently reviewed work + an evidence report',
+    prompts: ['build a REST API for a todo list in Go with PostgreSQL', 'implement the approved plan', 'what happened to my last run?', 'resume', 'task T-004 is blocked — retry it with a different agent', 'export the audit trail for review'] },
+];
+const CONVERSATION = [
+  ['You', '/sf-orchestrator build a REST API for a todo list in Go with PostgreSQL'],
+  ['Agent', 'Nothing is set up yet. May I set up your agents first? [yes / I’ll supply a factory.yaml / stop]'],
+  ['You', 'yes — Claude implements, Codex reviews'],
+  ['Agent', 'Both agents answered a test prompt. Next: there is no spec. May I build one with you?'],
+  ['You', 'yes'],
+  ['Agent', '(interviews you, writes 6 requirements with acceptance criteria) Approve this spec?'],
+  ['You', 'approved'],
+  ['Agent', 'The spec is approved but there is no plan. May I draft one? … 2 milestones, 7 tasks, 3 parallel layers. Approve?'],
+  ['You', 'approved'],
+  ['Agent', 'Starting. I’ll relay updates; the supervisor also pings you every 5 minutes. T-003 needed one rework (failing test), then passed independent review.'],
+  ['Agent', 'Milestone M1 passed its gate: 3 tasks merged into milestone/m1. Approve the milestone?'],
+  ['You', 'approved'],
+];
+function examples() {
+  const cards = EXAMPLES.map((e) => `<div class="card" data-skill="${e.skill}"><h3><code>/${e.skill}</code></h3><p>${esc(e.does)}</p><pre>${e.prompts.map((x) => `/${e.skill} ${esc(x)}`).join('\n')}</pre><p><strong>You get:</strong> ${esc(e.gives)}</p></div>`).join('');
+  const talk = CONVERSATION.map(([who, text]) => `<div class="msg ${who === 'You' ? 'you' : 'agent'}"><b>${who}</b><span>${esc(text)}</span></div>`).join('');
+  return `<div class="grid2 wide">${cards}</div><h3 style="margin-top:18px">A whole conversation (abridged, illustrative)</h3><div class="talk">${talk}</div>`;
+}
 
 function registryTable() {
   const rows = registry.agents.map((a) => `<tr><td>${esc(a.label)}</td><td><code>${esc(a.workspace)}</code></td><td><code>${esc(a.user)}</code></td><td>${esc(a.confidence)}</td></tr>`).join('');
@@ -426,13 +459,16 @@ svg{display:block;width:100%;height:auto;font-family:inherit}
 .life{stroke:var(--border);stroke-width:1.5;stroke-dasharray:4 5}.num{fill:var(--ink)}.numt{font-size:11px;font-weight:700;fill:var(--bg);text-anchor:middle}
 .theme{margin-left:auto;display:inline-flex;align-items:center;gap:6px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:999px;padding:3px 12px;font:inherit;font-size:12.5px;cursor:pointer}
 .theme:hover{border-color:var(--blue)}.theme:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.ex-note{font-size:12.5px;color:var(--muted)}pre{margin:8px 0;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow-x:auto;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}
+.talk{display:flex;flex-direction:column;gap:6px;margin-top:8px}.msg{display:grid;grid-template-columns:56px 1fr;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid var(--border);font-size:13.5px}.msg b{color:var(--muted);font-weight:600}
+.msg.you{background:color-mix(in srgb,var(--blue) 9%,var(--surface))}.msg.agent{background:var(--surface)}
 .sm-legend{columns:2 360px;column-gap:28px;margin:12px 0 4px;padding-left:28px;font-size:13px;color:var(--muted)}.sm-legend li{break-inside:avoid;margin:2px 0}.sm-legend li.blk{color:var(--red)}
 .note rect{fill:color-mix(in srgb,var(--amber) 10%,var(--surface));stroke:var(--amber);stroke-width:1}
 table{border-collapse:collapse;width:100%;font-size:13.5px}th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}th{color:var(--muted);font-weight:600}
 code{font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace;background:color-mix(in srgb,var(--ink) 9%,transparent);padding:1px 5px;border-radius:5px}
 .legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:10px 0 0;font-size:12.5px;color:var(--muted)}.legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:14px;height:14px;border-radius:4px;border:1.6px solid;display:inline-block}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}.grid2.wide{grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr))}
 .card{border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--bg)}.card h3{margin:0 0 4px;font-size:14px}.card p,.card ul{margin:0;font-size:13.5px;color:var(--muted)}.card ul{padding-left:18px}
 footer{max-width:1120px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:12.5px}
 @media (max-width:640px){body{font-size:14px}section{padding:12px}h1{font-size:22px}}
@@ -450,9 +486,9 @@ function page() {
 <style>${CSS}</style></head><body>
 <header><h1>sf-orchestrator — complete workflow</h1>
 <p class="sub">Skills for Factory <strong>v${SF_VERSION}</strong> · generated from the code by <code>npm run docs</code> · state machines and tables below are read from the source, not hand-drawn.</p></header>
-<nav><div><a href="#overview">Overview</a><a href="#preflight">1 Pre-flight</a><a href="#assess">2 Existing run?</a><a href="#supervise">3 Run &amp; supervise</a><a href="#pipeline">4 Task pipeline</a><a href="#states">5 States</a><a href="#recovery">6 Crash &amp; reset</a><a href="#audit">7 Audit</a><a href="#commands">Commands</a><a href="#install">Install</a><button type="button" class="theme" id="theme" aria-label="Color theme: auto (follows system). Click to change" title="Color theme">◐ Auto</button></div></nav>
+<nav><div><a href="#overview">Overview</a><a href="#preflight">1 Pre-flight</a><a href="#assess">2 Existing run?</a><a href="#supervise">3 Run &amp; supervise</a><a href="#pipeline">4 Task pipeline</a><a href="#states">5 States</a><a href="#recovery">6 Crash &amp; reset</a><a href="#audit">7 Audit</a><a href="#examples">Examples</a><a href="#commands">Commands</a><a href="#install">Install</a><button type="button" class="theme" id="theme" aria-label="Color theme: auto (follows system). Click to change" title="Color theme">◐ Auto</button></div></nav>
 <main>
-<section id="overview"><h2>Overview</h2><p class="lede">Four cooperating skills. Scripts do everything deterministic; the LLM interviews, judges escalations and talks to the user.</p>${overview()}${LEGEND}</section>
+<section id="overview"><h2>Overview</h2><p class="lede">Four skills form the delivery chain; a fifth, optional skill improves the writing. Scripts do everything deterministic; the agent interviews, judges escalations and talks to the user.</p>${overview()}${LEGEND}</section>
 
 <section id="preflight"><h2>1 · Pre-flight: nothing is built or run without asking</h2><p class="lede"><code>check</code> names the first missing input. When a step is missing entirely the agent must ask the user first and record the answer (<code>consent</code>); each skill still ends with the user’s explicit approval, written to the committed ledger.</p>${preflight()}</section>
 
@@ -470,11 +506,13 @@ function page() {
 
 <section id="audit"><h2>7 · Audit trail and replay</h2><p class="lede">Everything an external supervisor or reviewer needs to understand, replay or resume a run.</p>${audit()}</section>
 
-<section id="commands"><h2>Commands</h2><p class="lede"><code>node sf-orchestrator/scripts/sf.mjs &lt;command&gt;</code>. Gated commands need a terminal confirmation, or <code>--confirmed-by user --quote "…"</code> after asking the user (<code>external:&lt;id&gt;</code> for a remote supervisor).</p>
+<section id="examples"><h2>Examples — one per skill</h2><p class="lede">Prompts are illustrative; slash syntax depends on your agent. You only talk to the agent — it runs the scripts.</p>${examples()}</section>
+
+<section id="commands"><h2>Commands (run by the agent for you)</h2><p class="lede">You invoke the skill (e.g. <code>/sf-orchestrator build …</code>) and the agent runs these subcommands of the orchestrator script. They are listed for operators, CI and external supervisors. Gated ones need your confirmation: a terminal prompt, or the agent passes <code>--confirmed-by user --quote "…"</code> after asking you (<code>external:&lt;id&gt;</code> for a remote supervisor).</p>
 <table><thead><tr><th>Command</th><th>Typical caller</th><th>Purpose</th></tr></thead><tbody>${COMMANDS.map((c) => `<tr data-cmd="${c[0]}"><td><code>${c[0]}</code></td><td>${c[1]}</td><td>${esc(c[2])}</td></tr>`).join('')}</tbody></table>
 <p class="sub" style="margin-top:10px">Exit codes: 0 ok · 1 error/not ready · 2 usage · 3 idle (<code>run --exit-when-idle</code>) · 4 confirmation or decision required.</p></section>
 
-<section id="install"><h2>Install: detected agents and where skills go</h2><p class="lede"><code>node scripts/install.mjs</code> detects installed agents (CLI on PATH or config dir). Several found → choose a main agent, all detected, <code>.sf/skills</code> or <code>.agents/skills</code>. Default scope is the workspace.</p>${registryTable()}</section>
+<section id="install"><h2>Install: detected agents and where skills go</h2><p class="lede">The one-time installer (<code>scripts/install.mjs</code>) detects installed agents (CLI on PATH or config dir). Several found → choose a main agent, all detected, <code>.sf/skills</code> or <code>.agents/skills</code>. Default scope is the workspace.</p>${registryTable()}</section>
 </main>
 <footer>Generated for sf ${SF_VERSION}. Edit <code>scripts/build-docs.mjs</code>, not this file. Related: <code>README.md</code>, <code>sf-orchestrator/SKILL.md</code>, <code>sf-orchestrator/references/runtime-layout.md</code>.</footer>
 <script>

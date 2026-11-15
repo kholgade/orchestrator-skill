@@ -1,2 +1,2 @@
 // @ts-check
-export const SF_VERSION = '0.0.7';
+export const SF_VERSION = '0.0.8';

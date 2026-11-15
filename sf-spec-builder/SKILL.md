@@ -1,7 +1,7 @@
 ---
 name: sf-spec-builder
 description: Produce an approved, lint-clean specification (.sf/spec.md with REQ ids and verifiable acceptance criteria plus .sf/spec.index.json) by user interview, structured answers YAML, or delegation to the configured spec-author agent. Run when no approved spec exists or the user defines/changes what to build. Required by sf-plan-builder and sf-orchestrator.
-version: 0.0.7
+version: 0.0.8
 ---
 
 # sf-spec-builder
@@ -46,6 +46,12 @@ Confirmation flags: terminal use prompts and records `user`. Non-interactive: as
 
 ## Finish
 1. `lint` exit 0; open questions all `[x]` with decision text.
-2. Show final requirement list; obtain explicit user confirmation.
-3. `approve --confirmed-by user --quote "<their words>"`. Never approve without that confirmation.
-4. Next: `sf-plan-builder` (or return to invoking skill). Spec edits after plan approval cause plan drift: plan needs `rehash` + re-approval.
+2. Optional: if the user wants Simplified Technical English, run `sf-apply-ste` now (before approval); it changes no requirement IDs.
+3. Show final requirement list; obtain explicit user confirmation.
+4. `approve --confirmed-by user --quote "<their words>"`. Never approve without that confirmation.
+5. Next: `sf-plan-builder` (or return to invoking skill). Spec edits after plan approval cause plan drift: plan needs `rehash` + re-approval.
+
+## Examples
+- User: "I need a CLI that converts CSV to JSON, big files too" → resume check; interview (purpose, users, inputs, memory limit with a number, errors, performance target); draft REQ list; show; lint; resolve open questions; ask for approval; `approve --confirmed-by user --quote "<words>"`.
+- User: "build the spec from docs/PRD.md" → read the document; if `roles.spec_author` is an agent and user wants delegation, `delegate --sources docs/PRD.md`; otherwise draft yourself; unknowns → open questions; review with user; approve only after their yes.
+- User: "add a requirement: rate limit 100 req/min" → edit spec (new REQ id, criteria "returns 429 after the 101st request within 60 s"); `lint`; tell the user the approved plan will show spec drift and needs `rehash` + re-approval (sf-plan-builder).
