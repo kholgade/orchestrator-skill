@@ -1,0 +1,84 @@
+# .sf/factory.yaml — which agents exist and which role each one plays.
+# Strict YAML subset: spaces only, quote any value containing ": " or starting with a special character.
+# Edit the placeholders below (or let the sf-agent-setup interview write this file for you), then run:
+#   node sf-agent-setup/scripts/setup.mjs validate
+#   node sf-agent-setup/scripts/setup.mjs doctor --all
+sf: factory/1
+
+project:
+  id: my-project            # letters, digits, ., _, -
+  name: My Project
+  instructions: []          # repo rule files agents must read first, e.g. [AGENTS.md, CONTRIBUTING.md]
+
+# One entry per agent CLI. Nothing here is hard-coded in the tooling: describe how to run YOUR agent
+# headlessly (non-interactive) and the runner executes it as an argv array (never through a shell).
+#
+# Placeholders usable in args:
+#   {{prompt_pointer}}  short sentence telling the agent to read its brief file (recommended; no size limits)
+#   {{prompt}}          the full brief text    {{prompt_file}}  path of the brief file
+#   {{model}} {{cwd}} {{root}} {{role}} {{task_id}} {{attempt}} {{run_dir}} {{result_file}} {{agent_id}}
+# Conditional args: - {if: model, args: ["--model", "{{model}}"]}   (only added when the agent has a model)
+# input: stdin  → the brief is also piped to the agent's stdin (use when the CLI reads its prompt from stdin).
+agents:
+  - id: implementer-agent
+    command: REPLACE_WITH_EXECUTABLE   # must be on PATH
+    args: ["REPLACE_WITH_HEADLESS_FLAG", "{{prompt_pointer}}"]
+    capabilities: [coding]             # free-form tags; tasks can require some via "requires"
+    max_concurrency: 1
+    timeout_minutes: 60
+    enabled: true
+  - id: reviewer-agent
+    command: REPLACE_WITH_EXECUTABLE
+    args: ["REPLACE_WITH_HEADLESS_FLAG", "{{prompt_pointer}}"]
+    # model: sonnet                    # optional; enables {if: model, args: [...]} and review_independence: model
+    capabilities: [review]
+    max_concurrency: 1
+    enabled: true
+
+# Role → agent id. "session" for spec_author/planner means: the interactive agent running the skill does it itself.
+roles:
+  orchestrator: session
+  spec_author: session
+  planner: session
+  implementers: [implementer-agent]
+  reviewers: [reviewer-agent]    # must be independent of the implementer (see execution.review_independence)
+
+execution:
+  max_parallel_tasks: 2
+  max_rework_rounds: 2
+  task_timeout_minutes: 60
+  review_timeout_minutes: 30
+  poll_seconds: 2
+  review_independence: agent    # agent | model | provider — how different reviewer must be from implementer
+
+git:
+  base_branch: auto             # auto = the branch checked out when the run starts
+  milestone_branch_prefix: milestone/
+  task_branch_prefix: task/
+  worktree_root: .sf/runtime/worktrees
+  cleanup_after_integration: true
+  milestone_merge: manual       # manual = stop at an approved, ready milestone branch; local = merge into base
+
+verification:
+  require_independent_review: true
+
+approvals:
+  plan: true                    # plan.yaml must be status: approved before any run
+  milestone_merge: true         # pause at each milestone gate until a human approves
+
+notify:
+  interval_minutes: 5           # periodic digest; 0 disables. Blocked/approval/done events are sent immediately.
+  channels:
+    - type: terminal
+    - type: file                # also appends to .sf/runtime/notifications.log (status.md is always written)
+    # Webhook examples (secrets come from environment variables, never from this file):
+    # - type: webhook
+    #   preset: telegram        # POSTs https://api.telegram.org/bot<token>/sendMessage {chat_id, text}
+    #   url: "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
+    #   chat_id: "${TELEGRAM_CHAT_ID}"
+    # - type: webhook
+    #   preset: slack           # Slack incoming webhook → {text}
+    #   url: "${SLACK_WEBHOOK_URL}"
+    # - type: webhook
+    #   preset: discord         # Discord webhook → {content}
+    #   url: "${DISCORD_WEBHOOK_URL}"

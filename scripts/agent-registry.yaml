@@ -1,0 +1,117 @@
+# Where each coding agent loads Agent Skills (SKILL.md folders) from. Editable: pass --registry <file> to override.
+# Compiled 2026-11-15 from each vendor's documentation (see `sources`). `confidence`:
+#   official    = path stated in the vendor's own docs
+#   partial     = workspace path official, user-level path from secondary sources (verify before using --scope user)
+# Paths starting with "~" are expanded against HOME; "workspace" paths are relative to the project directory.
+sf_registry: 1
+
+generic:
+  agents_standard:
+    label: Cross-agent standard (.agents/skills)
+    workspace: .agents/skills
+    user: "~/.agents/skills"
+    read_by: [codex, copilot, gemini, opencode, pi, cursor]
+    note: Shared location documented by several agents (Codex, VS Code/Copilot, Gemini CLI, OpenCode, Pi, Cursor, Roo, Amp).
+  sf_standard:
+    label: Tool-neutral workspace setup (.sf/skills)
+    workspace: .sf/skills
+    user: ""
+    note: Not auto-discovered by any agent. The installer also appends a pointer block to AGENTS.md so any agent can be told to read the SKILL.md files.
+
+# Ordered by popularity/adoption in 2026 CLI/IDE agent surveys; add your own entries freely.
+agents:
+  - id: claude
+    label: Claude Code
+    commands: [claude]
+    config_dirs: ["~/.claude"]
+    workspace: .claude/skills
+    user: "~/.claude/skills"
+    confidence: official
+    sources: ["https://code.claude.com/docs/en/skills"]
+
+  - id: codex
+    label: OpenAI Codex CLI
+    commands: [codex]
+    config_dirs: ["~/.codex"]
+    workspace: .agents/skills
+    user: "~/.agents/skills"
+    confidence: official
+    note: Official docs use .agents/skills; older guides show .codex/skills (pass --dest to use that on an old Codex).
+    sources: ["https://developers.openai.com/codex/skills"]
+
+  - id: copilot
+    label: GitHub Copilot (CLI / VS Code agent mode)
+    commands: [copilot]
+    config_dirs: ["~/.copilot"]
+    workspace: .github/skills
+    user: "~/.copilot/skills"
+    confidence: official
+    note: Copilot CLI personal skills live in ~/.copilot/skills. VS Code also reads .claude/skills and .agents/skills.
+    sources: ["https://docs.github.com/en/copilot/concepts/agents/about-agent-skills", "https://code.visualstudio.com/docs/copilot/customization/agent-skills"]
+
+  - id: cursor
+    label: Cursor
+    commands: [cursor-agent, cursor]
+    config_dirs: ["~/.cursor"]
+    workspace: .cursor/skills
+    user: "~/.cursor/skills"
+    confidence: partial
+    note: Workspace path is official; the user-level path is unverified. Cursor also reads .claude/skills, .codex/skills and .agents/skills.
+    sources: ["https://cursor.com/docs/skills"]
+
+  - id: gemini
+    label: Gemini CLI
+    commands: [gemini]
+    config_dirs: ["~/.gemini"]
+    workspace: .gemini/skills
+    user: "~/.gemini/skills"
+    confidence: official
+    note: Agent Skills are marked experimental in Gemini CLI; enable them in its settings if /skills list shows nothing.
+    sources: ["https://geminicli.com/docs/cli/skills/"]
+
+  - id: opencode
+    label: OpenCode
+    commands: [opencode]
+    config_dirs: ["~/.config/opencode"]
+    workspace: .opencode/skills
+    user: "~/.config/opencode/skills"
+    confidence: official
+    sources: ["https://opencode.ai/docs/skills"]
+
+  - id: kiro
+    label: Kiro (IDE / CLI)
+    commands: [kiro-cli, kiro]
+    config_dirs: ["~/.kiro"]
+    workspace: .kiro/skills
+    user: "~/.kiro/skills"
+    confidence: official
+    note: Kiro CLI custom agents must list the skills in their resources, e.g. "skill://.kiro/skills/*/SKILL.md". Untrusted folders are not read.
+    sources: ["https://kiro.dev/docs/skills/", "https://kiro.dev/docs/cli/skills/"]
+
+  - id: cline
+    label: Cline
+    commands: [cline]
+    config_dirs: ["~/.cline"]
+    workspace: .cline/skills
+    user: "~/.cline/skills"
+    confidence: official
+    sources: ["https://docs.cline.bot/customization/skills"]
+
+  - id: windsurf
+    label: Windsurf (Cascade)
+    commands: [windsurf]
+    config_dirs: ["~/.codeium/windsurf"]
+    workspace: .windsurf/skills
+    user: "~/.codeium/windsurf/skills"
+    confidence: official
+    sources: ["https://docs.windsurf.com/windsurf/cascade/skills"]
+
+  - id: pi
+    label: Pi
+    commands: [pi]
+    config_dirs: ["~/.pi"]
+    workspace: .pi/skills
+    user: "~/.pi/agent/skills"
+    confidence: official
+    note: Also reads .agents/skills. Discovery rules differ slightly between Pi versions; use /reload after installing.
+    sources: ["https://pi.dev/docs/latest/skills"]

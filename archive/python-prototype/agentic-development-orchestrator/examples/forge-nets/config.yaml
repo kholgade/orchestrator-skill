@@ -1,0 +1,95 @@
+# Illustrative adaptation of the uploaded ForgeNts meta prompt.
+# Project-specific rules remain in the repository's AGENTS.md and source documents.
+project:
+  id: forgen-ts
+  name: ForgeNts
+  goal: Build ForgeNts according to the approved implementation plan and repository governance.
+  type: existing_application
+  repository: .
+  base_branch: main
+  scope:
+    included: [Specification, design, scaffold, integrations, worker dispatch, review loop, status and hardening]
+    excluded: [Unapproved scope additions]
+  deliverables: [Approved milestones, tests, operational documentation]
+
+sources:
+  documents:
+    - path: 01-specs/IMPLEMENTATION_PLAN.md
+      type: implementation_plan
+      authority: primary
+      required: true
+    - path: AGENTS.md
+      type: governance
+      authority: binding
+      required: true
+  project_instructions: [AGENTS.md]
+  precedence: [explicit_human_instruction, AGENTS.md, approved_specification, approved_design, implementation_plan]
+
+agents:
+  - id: pi
+    role: implementer
+    type: external
+    adapter: cli
+    command: "03-code/scripts/agent/run-pi.sh"
+    model: "Ollama Cloud configured profile"
+    capabilities: [coding, testing, refactoring]
+    enabled: true
+  - id: cline
+    role: implementer
+    type: external
+    adapter: cli
+    command: "03-code/scripts/agent/run-cline.sh"
+    model: "Ollama Cloud configured profile"
+    capabilities: [coding, testing, refactoring]
+    enabled: true
+  - id: cursor-reviewer
+    role: reviewer
+    type: external
+    adapter: subagent
+    command: "Cursor Task subagent"
+    model: "Configured Cursor model"
+    capabilities: [code_review, requirements_verification, eval_review]
+    independent_from: [pi, cline]
+    enabled: true
+
+tasks: []
+# The orchestrator must read the implementation plan and AGENTS.md, then derive task records.
+# Do not infer or invent milestone task details from this example file.
+
+execution:
+  max_parallel_tasks: 2
+  max_parallel_agents: 3
+  max_rework_rounds: 3
+  task_timeout_minutes: 120
+  stop_on_blocking_finding: true
+
+git:
+  strategy: milestone
+  base_branch: main
+  milestone_branch_prefix: milestone/
+  task_branch_prefix: task/
+  worktrees:
+    enabled: true
+    root: .worktrees
+    cleanup_after_integration: true
+    preserve_on_failure: true
+
+verification:
+  independent_review_required: true
+  required_checks: [acceptance_criteria, project_governance, tests, milestone_evals]
+  require_evidence: true
+  commands: []
+
+approvals:
+  plan_before_execution: true
+  milestone_merge: true
+  production_deployment: true
+  destructive_operations: true
+  scope_changes: true
+
+state:
+  path: .orchestrator/state.json
+  event_log: .orchestrator/events.jsonl
+
+delivery:
+  report_path: .orchestrator/final-report.md

@@ -1,0 +1,18 @@
+{
+  "name": "skills-for-factory",
+  "version": "0.0.6",
+  "private": true,
+  "description": "sf-* skills: agent setup, spec builder, plan builder and orchestrator for multi-agent software delivery.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "sync": "node scripts/sync-shared.mjs",
+    "sync:check": "node scripts/sync-shared.mjs --check",
+    "docs": "node scripts/build-docs.mjs",
+    "docs:check": "node scripts/build-docs.mjs --check",
+    "test": "node scripts/sync-shared.mjs && node scripts/build-docs.mjs && node --test tests/"
+  },
+  "license": "UNLICENSED"
+}
