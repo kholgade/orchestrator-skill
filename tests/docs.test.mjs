@@ -32,13 +32,13 @@ test('every documented command exists in sf.mjs --help, and every sf.mjs command
   for (const c of real) assert.ok(documented.includes(c), `command "${c}" is not documented in the HTML`);
 });
 
-test('docs list every agent in the install registry; no stale HTML remains outside the archive', () => {
+test('docs list every agent in the install registry; docs/orchestrator-workflow.html is the only HTML file', () => {
   const reg = parse(fs.readFileSync(path.join(REPO, 'scripts', 'agent-registry.yaml'), 'utf8'));
   for (const a of reg.agents) assert.ok(html().includes(a.label.replace(/&/g, '&amp;')), a.label);
   const stale = [];
   const walk = (d) => {
     for (const e of fs.readdirSync(d, { withFileTypes: true })) {
-      if (['.git', 'node_modules', 'archive'].includes(e.name)) continue;
+      if (['.git', 'node_modules'].includes(e.name)) continue;
       const f = path.join(d, e.name);
       if (e.isDirectory()) walk(f);
       else if (e.name.endsWith('.html') && f !== HTML) stale.push(path.relative(REPO, f));
@@ -46,12 +46,19 @@ test('docs list every agent in the install registry; no stale HTML remains outsi
   };
   walk(REPO);
   assert.deepEqual(stale, []);
-  const archived = fs.readFileSync(path.join(REPO, 'archive/python-prototype/agentic-development-orchestrator/docs/state-machine.html'), 'utf8');
-  assert.match(archived, /SUPERSEDED/);
+});
+
+test('docs have a working light/dark/auto theme switch', () => {
+  const h = html();
+  assert.match(h, /id="theme"/);
+  assert.match(h, /:root\[data-theme="dark"\]\{/);
+  assert.match(h, /:root:not\(\[data-theme="light"\]\)/);
+  assert.match(h, /localStorage\.setItem\('sf-docs-theme'/);
+  for (const m of ['auto', 'light', 'dark']) assert.ok(h.includes(m));
 });
 
 test('repository root is tidy', () => {
-  const allowed = new Set(['.git', '.gitignore', 'README.md', 'package.json', 'archive', 'docs', 'scripts', 'sf-agent-setup', 'sf-orchestrator', 'sf-plan-builder', 'sf-shared', 'sf-spec-builder', 'tests']);
+  const allowed = new Set(['.git', '.gitignore', 'README.md', 'package.json', 'docs', 'scripts', 'sf-agent-setup', 'sf-orchestrator', 'sf-plan-builder', 'sf-shared', 'sf-spec-builder', 'tests']);
   const extra = fs.readdirSync(REPO).filter((n) => !allowed.has(n) && n !== '.DS_Store');
   assert.deepEqual(extra, []);
 });

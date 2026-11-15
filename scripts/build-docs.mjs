@@ -392,9 +392,11 @@ function registryTable() {
 <tr><td>Tool-neutral setup</td><td><code>${esc(registry.generic.sf_standard.workspace)}</code></td><td>—</td><td>AGENTS.md pointer</td></tr></tbody></table>`;
 }
 
+const DARK = 'color-scheme:dark;--bg:#10151b;--surface:#18202a;--text:#e6ebf1;--muted:#9aa7b5;--border:#2b3846;--blue:#6da2ff;--violet:#b595ff;--amber:#f0a94a;--green:#4fcb8a;--red:#ff7b6b;--teal:#4cc9c9;--ink:#b9c4d0';
 const CSS = `
-:root{--bg:#f7f8fa;--surface:#fff;--text:#16202b;--muted:#5b6876;--border:#d5dbe3;--blue:#2563c9;--violet:#7a45c9;--amber:#b86a00;--green:#1c7d4c;--red:#c0392b;--teal:#0e7a7a;--ink:#2b3846}
-@media (prefers-color-scheme:dark){:root{--bg:#10151b;--surface:#18202a;--text:#e6ebf1;--muted:#9aa7b5;--border:#2b3846;--blue:#6da2ff;--violet:#b595ff;--amber:#f0a94a;--green:#4fcb8a;--red:#ff7b6b;--teal:#4cc9c9;--ink:#b9c4d0}}
+:root{color-scheme:light;--bg:#f7f8fa;--surface:#fff;--text:#16202b;--muted:#5b6876;--border:#d5dbe3;--blue:#2563c9;--violet:#7a45c9;--amber:#b86a00;--green:#1c7d4c;--red:#c0392b;--teal:#0e7a7a;--ink:#2b3846}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${DARK}}}
+:root[data-theme="dark"]{${DARK}}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
 header{padding:28px 20px 8px;max-width:1120px;margin:0 auto}
@@ -422,6 +424,8 @@ svg{display:block;width:100%;height:auto;font-family:inherit}
 .ed{stroke:var(--ink);stroke-width:1.6}.ed.g{stroke:var(--green)}.ed.r{stroke:var(--red)}.ed.a{stroke:var(--amber)}.dash{stroke-dasharray:5 4}
 .ah{fill:var(--ink)}.ah.g{fill:var(--green)}.ah.r{fill:var(--red)}.ah.a{fill:var(--amber)}
 .life{stroke:var(--border);stroke-width:1.5;stroke-dasharray:4 5}.num{fill:var(--ink)}.numt{font-size:11px;font-weight:700;fill:var(--bg);text-anchor:middle}
+.theme{margin-left:auto;display:inline-flex;align-items:center;gap:6px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:999px;padding:3px 12px;font:inherit;font-size:12.5px;cursor:pointer}
+.theme:hover{border-color:var(--blue)}.theme:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .sm-legend{columns:2 360px;column-gap:28px;margin:12px 0 4px;padding-left:28px;font-size:13px;color:var(--muted)}.sm-legend li{break-inside:avoid;margin:2px 0}.sm-legend li.blk{color:var(--red)}
 .note rect{fill:color-mix(in srgb,var(--amber) 10%,var(--surface));stroke:var(--amber);stroke-width:1}
 table{border-collapse:collapse;width:100%;font-size:13.5px}th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}th{color:var(--muted);font-weight:600}
@@ -442,10 +446,11 @@ function page() {
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>sf-orchestrator workflow</title>
 <meta name="generator" content="scripts/build-docs.mjs" data-sf-version="${SF_VERSION}">
+<script>try{var t=localStorage.getItem('sf-docs-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <style>${CSS}</style></head><body>
 <header><h1>sf-orchestrator — complete workflow</h1>
 <p class="sub">Skills for Factory <strong>v${SF_VERSION}</strong> · generated from the code by <code>npm run docs</code> · state machines and tables below are read from the source, not hand-drawn.</p></header>
-<nav><div><a href="#overview">Overview</a><a href="#preflight">1 Pre-flight</a><a href="#assess">2 Existing run?</a><a href="#supervise">3 Run &amp; supervise</a><a href="#pipeline">4 Task pipeline</a><a href="#states">5 States</a><a href="#recovery">6 Crash &amp; reset</a><a href="#audit">7 Audit</a><a href="#commands">Commands</a><a href="#install">Install</a></div></nav>
+<nav><div><a href="#overview">Overview</a><a href="#preflight">1 Pre-flight</a><a href="#assess">2 Existing run?</a><a href="#supervise">3 Run &amp; supervise</a><a href="#pipeline">4 Task pipeline</a><a href="#states">5 States</a><a href="#recovery">6 Crash &amp; reset</a><a href="#audit">7 Audit</a><a href="#commands">Commands</a><a href="#install">Install</a><button type="button" class="theme" id="theme" aria-label="Color theme: auto (follows system). Click to change" title="Color theme">◐ Auto</button></div></nav>
 <main>
 <section id="overview"><h2>Overview</h2><p class="lede">Four cooperating skills. Scripts do everything deterministic; the LLM interviews, judges escalations and talks to the user.</p>${overview()}${LEGEND}</section>
 
@@ -472,6 +477,21 @@ function page() {
 <section id="install"><h2>Install: detected agents and where skills go</h2><p class="lede"><code>node scripts/install.mjs</code> detects installed agents (CLI on PATH or config dir). Several found → choose a main agent, all detected, <code>.sf/skills</code> or <code>.agents/skills</code>. Default scope is the workspace.</p>${registryTable()}</section>
 </main>
 <footer>Generated for sf ${SF_VERSION}. Edit <code>scripts/build-docs.mjs</code>, not this file. Related: <code>README.md</code>, <code>sf-orchestrator/SKILL.md</code>, <code>sf-orchestrator/references/runtime-layout.md</code>.</footer>
+<script>
+(function(){
+  var root=document.documentElement,btn=document.getElementById('theme');
+  var order=['auto','light','dark'],icons={auto:'◐ Auto',light:'☀ Light',dark:'☾ Dark'};
+  function current(){var t=root.getAttribute('data-theme');return t==='light'||t==='dark'?t:'auto'}
+  function paint(){var c=current();btn.textContent=icons[c];btn.setAttribute('aria-label','Color theme: '+c+(c==='auto'?' (follows system)':'')+'. Click to change')}
+  btn.addEventListener('click',function(){
+    var next=order[(order.indexOf(current())+1)%3];
+    if(next==='auto')root.removeAttribute('data-theme');else root.setAttribute('data-theme',next);
+    try{if(next==='auto')localStorage.removeItem('sf-docs-theme');else localStorage.setItem('sf-docs-theme',next)}catch(e){}
+    paint();
+  });
+  paint();
+})();
+</script>
 </body></html>
 `;
 }

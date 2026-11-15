@@ -1,7 +1,7 @@
 ---
 name: sf-plan-builder
 description: Produce an approved execution plan (.sf/plan.yaml) from an approved spec — milestones, task DAG, non-overlapping write scopes, verify commands, requirement traceability — by analysis with user review, or delegation to the configured planner agent. Run when no approved plan exists, after a spec change, or when work must be restructured or amended. Required by sf-orchestrator.
-version: 0.0.6
+version: 0.0.7
 ---
 
 # sf-plan-builder

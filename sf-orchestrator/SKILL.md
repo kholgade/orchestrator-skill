@@ -1,7 +1,7 @@
 ---
 name: sf-orchestrator
 description: Deliver an approved plan with multiple coding agents — parallel tasks in isolated git worktrees, supervisor-run evidence, independent review, bounded rework, milestone gates, periodic user updates (default 5 min), resumable runs with a full audit journal. Invokes sf-agent-setup, sf-spec-builder, sf-plan-builder first when their outputs are missing. Run to build/implement/deliver a project with agents, or to resume, assess, reset, inspect, replay, export, unblock or stop a delivery.
-version: 0.0.6
+version: 0.0.7
 ---
 
 # sf-orchestrator

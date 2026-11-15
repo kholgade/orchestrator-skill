@@ -27,11 +27,11 @@ async function crashedRun() {
   const dir = setup({ implEnv: { FAKE_SLEEP_ATTEMPT1_MS: '60000', FAKE_SLEEP_TASKS: 'T-001,T-002' } });
   node(SF, ['run', '--detach', '--allow-unverified'], { cwd: dir });
   let pids = [];
-  for (let i = 0; i < 100 && !pids.length; i++) {
+  for (let i = 0; i < 100 && pids.length < 2; i++) {
     await sleep(150);
     try { pids = Object.values(readState(dir).tasks).filter((t) => t.status === 'RUNNING' && t.activity?.pid).map((t) => t.activity.pid); } catch { /* not yet */ }
   }
-  assert.ok(pids.length, 'an agent should be running');
+  assert.equal(pids.length, 2, 'both parallel tasks should be running before the crash');
   cleanup.push(...pids);
   const lock = JSON.parse(fs.readFileSync(path.join(dir, '.sf/runtime/supervisor.lock'), 'utf8'));
   process.kill(lock.pid, 'SIGKILL');

@@ -1,7 +1,7 @@
 ---
 name: sf-spec-builder
 description: Produce an approved, lint-clean specification (.sf/spec.md with REQ ids and verifiable acceptance criteria plus .sf/spec.index.json) by user interview, structured answers YAML, or delegation to the configured spec-author agent. Run when no approved spec exists or the user defines/changes what to build. Required by sf-plan-builder and sf-orchestrator.
-version: 0.0.6
+version: 0.0.7
 ---
 
 # sf-spec-builder

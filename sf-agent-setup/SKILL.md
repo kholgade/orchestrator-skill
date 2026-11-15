@@ -1,7 +1,7 @@
 ---
 name: sf-agent-setup
 description: Build and verify .sf/factory.yaml (agent CLIs, role map, limits, git/approval/notification policy). Run when .sf/factory.yaml is missing, invalid, has unverified agents, or the user changes agents, roles, models, parallelism, git policy, approvals or notifications. Other sf-* skills call this first.
-version: 0.0.6
+version: 0.0.7
 ---
 
 # sf-agent-setup

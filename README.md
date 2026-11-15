@@ -1,4 +1,4 @@
-# Skills for Factory (`sf-*`) — v0.0.6
+# Skills for Factory (`sf-*`) — v0.0.7
 
 > **See the whole workflow:** open [`docs/orchestrator-workflow.html`](docs/orchestrator-workflow.html) — pre-flight and consent, run assessment, supervision loop, per-task pipeline, state machines, crash recovery, audit trail. It is generated from the code (`npm run docs`) and checked by the tests, so it cannot silently go stale.
 
@@ -80,9 +80,8 @@ sf-*/              the skills: SKILL.md, scripts/ (+ vendored scripts/lib), temp
 scripts/           sync-shared.mjs (vendor lib into skills), install.mjs + agent-registry.yaml (detection + skill directories)
 tests/             node:test suites incl. an end-to-end run with a fake agent
 docs/              orchestrator-workflow.html — the complete workflow as diagrams (generated: `npm run docs`)
-archive/           retired material: the Python prototype and the source prompts the design generalised from
 ```
-Develop: edit `sf-shared/lib`, run `npm run sync` (and `npm run docs` after changing states, commands or the agent registry), then `npm test` (sync + 32 tests incl. crash/kill -9 recovery and installer, ~20 s).
+Develop: edit `sf-shared/lib`, run `npm run sync` (and `npm run docs` after changing states, commands or the agent registry), then `npm test` (sync + 38 tests incl. crash/kill -9 recovery, installer and docs freshness, ~35 s).
 
 ## Status and limits (honest)
 - Tested end to end with a deterministic fake agent on macOS (parallelism, rework, scope violations, approvals,

@@ -388,6 +388,9 @@ export class Supervisor {
     const rec = this.store.milestone(mid);
     const branch = this.milestoneBranch(mid);
     const wt = this.integrationPath(mid);
+    rec.branch = branch;
+    rec.integration_worktree = wt;
+    this.store.save();
     if (!exists(wt)) {
       G.worktreePrune(this.repo);
       G.worktreeAdd(this.repo, wt, branch, this.base);
@@ -413,6 +416,10 @@ export class Supervisor {
     const mrec = this.store.milestone(pt.milestone);
     const branch = `${this.factory.git.task_branch_prefix}${slug(id)}`;
     const wt = path.join(this.worktreeRoot, slug(pt.milestone), slug(id));
+    t.branch = branch;
+    t.worktree = wt;
+    t.base_ref = mrec.branch;
+    this.store.save();
     if (!exists(wt)) {
       G.worktreePrune(this.repo);
       G.worktreeAdd(this.repo, wt, branch, mrec.branch);

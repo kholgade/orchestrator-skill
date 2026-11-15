@@ -66,11 +66,16 @@ export function archiveRun(root, { reason, who }) {
     const wtRoot = path.resolve(root, factory.git.worktree_root);
     const moved = [];
     G.worktreePrune(root);
+    const attached = new Set();
     for (const w of G.worktreeList(root)) {
       const p = path.resolve(w.worktree);
-      if (p.startsWith(wtRoot + path.sep)) moveWorktree(root, p, path.join(dest, 'worktrees', path.relative(wtRoot, p)), moved);
+      if (p.startsWith(wtRoot + path.sep)) {
+        if (w.branch) attached.add(w.branch.replace(/^refs\/heads\//, ''));
+        moveWorktree(root, p, path.join(dest, 'worktrees', path.relative(wtRoot, p)), moved);
+      }
     }
-    const names = new Set([...Object.values(state.tasks).map((t) => t.branch), ...Object.values(state.milestones).map((m) => m.branch)].filter(Boolean));
+    // branches known to the state PLUS any branch attached to an sf worktree (covers a crash between "worktree add" and "state save")
+    const names = new Set([...Object.values(state.tasks).map((t) => t.branch), ...Object.values(state.milestones).map((m) => m.branch), ...attached].filter(Boolean));
     const branches = [];
     for (const b of names) {
       if (!G.branchExists(root, b)) continue;
@@ -144,11 +149,17 @@ export function resetTask(root, taskId, { reason, who }) {
     const dest = path.join(paths.archive, runId, 'tasks', `${slug(taskId)}-${n}`);
     mkdirp(dest);
     const moved = [];
-    if (t.worktree && exists(t.worktree)) moveWorktree(root, t.worktree, path.join(dest, 'worktree'), moved);
+    const wtPath = t.worktree ?? path.join(path.resolve(root, factory.git.worktree_root), slug(t.milestone), slug(taskId));
+    let attachedBranch = null;
+    if (exists(wtPath)) {
+      attachedBranch = G.git(wtPath, ['rev-parse', '--abbrev-ref', 'HEAD'], { allowFail: true }).stdout.trim() || null;
+      moveWorktree(root, wtPath, path.join(dest, 'worktree'), moved);
+    }
     const branches = [];
-    if (t.branch && G.branchExists(root, t.branch)) {
-      const to = `${archiveBranchName(runId, t.branch)}-${n}`;
-      try { G.branchRename(root, t.branch, to); branches.push({ from: t.branch, to, ok: true }); } catch (e) { branches.push({ from: t.branch, to, ok: false, error: e.message }); }
+    const branchName = t.branch ?? attachedBranch;
+    if (branchName && branchName !== 'HEAD' && G.branchExists(root, branchName)) {
+      const to = `${archiveBranchName(runId, branchName)}-${n}`;
+      try { G.branchRename(root, branchName, to); branches.push({ from: branchName, to, ok: true }); } catch (e) { branches.push({ from: branchName, to, ok: false, error: e.message }); }
     }
     const fresh = newTaskRecord(pt);
     fresh.reset_count = n;
